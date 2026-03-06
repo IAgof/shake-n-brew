@@ -64,7 +64,6 @@ export const useShake = ({
           // We detected a shake
           setIsShaking(true);
           onShakeRef.current?.();
-          if (onShake) onShake();
 
           if (shakeIndicatorTimeoutRef.current) {
             clearTimeout(shakeIndicatorTimeoutRef.current);

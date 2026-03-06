@@ -1,6 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useShake, simulateShake } from "@/hooks/useShake";
 import { getRandomBeer } from "@/data/beers";
 import { BeerCard } from "@/components/BeerCard";
