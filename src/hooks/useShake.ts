@@ -11,6 +11,10 @@ interface ShakeOptions {
 const SHAKE_THRESHOLD = 15;
 const SHAKE_TIMEOUT = 1000;
 
+type DeviceMotionEventWithPermission = typeof DeviceMotionEvent & {
+  requestPermission?: () => Promise<"granted" | "denied">;
+};
+
 export const useShake = ({
   threshold = SHAKE_THRESHOLD,
   timeout = SHAKE_TIMEOUT,
@@ -21,7 +25,13 @@ export const useShake = ({
   const lastX = useRef(0);
   const lastY = useRef(0);
   const lastZ = useRef(0);
+  const onShakeRef = useRef(onShake);
+  const shakeIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    onShakeRef.current = onShake;
+  }, [onShake]);
   
   useEffect(() => {
     // Check if we're running in a browser environment
@@ -52,9 +62,14 @@ export const useShake = ({
           
           // We detected a shake
           setIsShaking(true);
+          onShakeRef.current?.();
           if (onShake) onShake();
+
+          if (shakeIndicatorTimeoutRef.current) {
+            clearTimeout(shakeIndicatorTimeoutRef.current);
+          }
           
-          setTimeout(() => setIsShaking(false), 300);
+          shakeIndicatorTimeoutRef.current = setTimeout(() => setIsShaking(false), 300);
           lastTime.current = currentTime;
         }
         
@@ -67,10 +82,12 @@ export const useShake = ({
     // For browsers that require permission for device motion
     const requestMotionPermission = async () => {
       // Check if the browser requires permission for DeviceMotion events
+      const motionEvent = DeviceMotionEvent as DeviceMotionEventWithPermission;
+
       if (typeof DeviceMotionEvent !== 'undefined' && 
-          typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+          typeof motionEvent.requestPermission === 'function') {
         try {
-          const permissionState = await (DeviceMotionEvent as any).requestPermission();
+          const permissionState = await motionEvent.requestPermission();
           if (permissionState === 'granted') {
             window.addEventListener('devicemotion', handleShake);
           } else {
@@ -95,9 +112,12 @@ export const useShake = ({
     
     // Cleanup
     return () => {
+      if (shakeIndicatorTimeoutRef.current) {
+        clearTimeout(shakeIndicatorTimeoutRef.current);
+      }
       window.removeEventListener('devicemotion', handleShake);
     };
-  }, [threshold, timeout, onShake, toast]);
+  }, [threshold, timeout, toast]);
   
   // Return the shaking state so the component can react to it
   return { isShaking };
