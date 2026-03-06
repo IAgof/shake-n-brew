@@ -1,4 +1,5 @@
 
+import { useState, useEffect, useCallback } from "react";
 import { useState, useEffect, useRef } from "react";
 import { useShake, simulateShake } from "@/hooks/useShake";
 import { getRandomBeer } from "@/data/beers";
@@ -15,7 +16,7 @@ export const ShakeDetector = () => {
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMobile = useIsMobile();
   
-  const handleShake = () => {
+  const handleShake = useCallback(() => {
     setShowCard(false);
 
     if (transitionTimeoutRef.current) {
@@ -27,7 +28,7 @@ export const ShakeDetector = () => {
       setSelectedBeer(getRandomBeer());
       setShowCard(true);
     }, 500);
-  };
+  }, []);
   
   // Use our shake hook
   const { isShaking } = useShake({
