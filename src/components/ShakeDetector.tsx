@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Smartphone, RefreshCw } from "lucide-react";
 
 export const ShakeDetector = () => {
-  const [selectedBeer, setSelectedBeer] = useState(getRandomBeer());
+  const [selectedBeer, setSelectedBeer] = useState(() => getRandomBeer());
   const [showDetail, setShowDetail] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
