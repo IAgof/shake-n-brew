@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useShake, simulateShake } from "@/hooks/useShake";
 import { getRandomBeer } from "@/data/beers";
 import { BeerCard } from "@/components/BeerCard";
@@ -14,7 +14,7 @@ export const ShakeDetector = () => {
   const [showCard, setShowCard] = useState(false);
   const isMobile = useIsMobile();
   
-  const handleShake = () => {
+  const handleShake = useCallback(() => {
     setShowCard(false);
     
     // Wait for the exit animation to complete
@@ -22,7 +22,7 @@ export const ShakeDetector = () => {
       setSelectedBeer(getRandomBeer());
       setShowCard(true);
     }, 500);
-  };
+  }, []);
   
   // Use our shake hook
   const { isShaking } = useShake({
