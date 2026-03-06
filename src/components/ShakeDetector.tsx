@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useShake, simulateShake } from "@/hooks/useShake";
 import { getRandomBeer } from "@/data/beers";
 import { BeerCard } from "@/components/BeerCard";
@@ -12,13 +12,18 @@ export const ShakeDetector = () => {
   const [selectedBeer, setSelectedBeer] = useState(() => getRandomBeer());
   const [showDetail, setShowDetail] = useState(false);
   const [showCard, setShowCard] = useState(false);
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMobile = useIsMobile();
   
   const handleShake = () => {
     setShowCard(false);
+
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
     
     // Wait for the exit animation to complete
-    setTimeout(() => {
+    transitionTimeoutRef.current = setTimeout(() => {
       setSelectedBeer(getRandomBeer());
       setShowCard(true);
     }, 500);
@@ -35,7 +40,12 @@ export const ShakeDetector = () => {
       setShowCard(true);
     }, 800);
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
   }, []);
   
   const handleCardClick = () => {

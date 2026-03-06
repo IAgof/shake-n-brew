@@ -21,6 +21,7 @@ export const useShake = ({
   const lastX = useRef(0);
   const lastY = useRef(0);
   const lastZ = useRef(0);
+  const shakeIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -53,8 +54,12 @@ export const useShake = ({
           // We detected a shake
           setIsShaking(true);
           if (onShake) onShake();
+
+          if (shakeIndicatorTimeoutRef.current) {
+            clearTimeout(shakeIndicatorTimeoutRef.current);
+          }
           
-          setTimeout(() => setIsShaking(false), 300);
+          shakeIndicatorTimeoutRef.current = setTimeout(() => setIsShaking(false), 300);
           lastTime.current = currentTime;
         }
         
@@ -95,6 +100,9 @@ export const useShake = ({
     
     // Cleanup
     return () => {
+      if (shakeIndicatorTimeoutRef.current) {
+        clearTimeout(shakeIndicatorTimeoutRef.current);
+      }
       window.removeEventListener('devicemotion', handleShake);
     };
   }, [threshold, timeout, onShake, toast]);
