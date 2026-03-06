@@ -11,6 +11,26 @@ interface ShakeOptions {
 const SHAKE_THRESHOLD = 15;
 const SHAKE_TIMEOUT = 1000;
 
+export const getAccelerationDeltas = (
+  current: DeviceMotionEventAcceleration,
+  previous: { x: number; y: number; z: number }
+) => {
+  const { x, y, z } = current;
+
+  if (x == null || y == null || z == null) {
+    return null;
+  }
+
+  return {
+    x,
+    y,
+    z,
+    deltaX: Math.abs(previous.x - x),
+    deltaY: Math.abs(previous.y - y),
+    deltaZ: Math.abs(previous.z - z),
+  };
+};
+
 export const useShake = ({
   threshold = SHAKE_THRESHOLD,
   timeout = SHAKE_TIMEOUT,
@@ -37,13 +57,14 @@ export const useShake = ({
       const currentTime = new Date().getTime();
       // Only process if we have waited long enough
       if ((currentTime - lastTime.current) > timeout) {
-        const { x, y, z } = event.accelerationIncludingGravity || { x: 0, y: 0, z: 0 };
-        
-        if (!x || !y || !z) return;
-        
-        const deltaX = Math.abs(lastX.current - x);
-        const deltaY = Math.abs(lastY.current - y);
-        const deltaZ = Math.abs(lastZ.current - z);
+        const acceleration = getAccelerationDeltas(
+          event.accelerationIncludingGravity || { x: 0, y: 0, z: 0 },
+          { x: lastX.current, y: lastY.current, z: lastZ.current }
+        );
+
+        if (!acceleration) return;
+
+        const { x, y, z, deltaX, deltaY, deltaZ } = acceleration;
         
         // Check if the motion exceeds our threshold
         if ((deltaX > threshold && deltaY > threshold) || 
